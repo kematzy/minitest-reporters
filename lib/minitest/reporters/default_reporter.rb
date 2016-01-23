@@ -19,6 +19,11 @@ module Minitest
         @suite_times = []
         @suite_start_times = {}
         @fast_fail = options.fetch(:fast_fail, false)
+        
+        @show_time   = options.fetch(:show_time, true)
+        @show_status = options.fetch(:show_status, true)
+        @show_order  = options.fetch(:show_order, :after)
+        
         @options = options
       end
 
