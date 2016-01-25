@@ -55,6 +55,62 @@ color output from `DefaultReporter`:
 Minitest::Reporters.use! [Minitest::Reporters::DefaultReporter.new(:color => true)]
 ```
 
+
+## SpecReporter - configuration options ##
+
+The SpecReporter supports configuration options to customise the output as highlighted below.
+
+Available options:
+
+ *  `:show_order`   - sets the output order of the status, timer and test name with reference to the status part. 
+                      Available options: `:before` or `:after` [ Default: `:after` ]
+ 
+ *  `:show_time`    - toggle for outputting the timer info.  [ Default: `true` ]
+ 
+ *  `:show_status`  - toggle for outputting the status info   [ Default: `true` ]
+
+
+By default SpecReporter outputs the test status and time consumed after a padded test name, which 
+would look something like this:
+
+```ruby
+# ...SpecReporter.new
+"test_should_return_the_correct_path                            PASS (0.00s)"  # test syntax
+"test: Should return the correct path                           PASS (0.00s)"  # shoulda syntax
+"test_0001_should return the correct path                       PASS (0.00s)"  # spec syntax
+```
+
+By combining the configuration options the following output formats can be achieved:
+
+```ruby
+# ...SpecReporter.new(:show_order => :after) <--- not required, default value
+"test_should_return_the_correct_path                        PASS (0.00s)"
+
+# ...SpecReporter.new(:show_order => :after, :show_time => false)
+"test_should_return_the_correct_path                        PASS"
+
+# ...SpecReporter.new(:show_order => :after, :show_status => false)
+"test_should_return_the_correct_path                        (0.00s)"
+
+
+# ...SpecReporter.new(:show_order => :before)
+"PASS  should return the correct path  -  (0.00s)"  # spec syntax
+
+# ...SpecReporter.new(:show_order => :before, :show_time => false)
+"PASS   should return the correct path"
+
+# ...SpecReporter.new(:show_order => :before, :show_status => false)
+"should return the correct path  -  (0.00s)"
+
+# ...SpecReporter.new(:show_order => :before, :show_status => false, :show_time => false)
+"should return the correct path"
+
+```
+
+This can aid in the creation of spec documents from your test suite(s).
+
+
+
 ## Screenshots ##
 
 **Default Reporter**
@@ -112,3 +168,4 @@ that Rails has already set.
 ## License ##
 
 Minitest-reporters is licensed under the MIT License. See `LICENSE` for details.
+I
