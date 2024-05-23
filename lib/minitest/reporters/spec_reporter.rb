@@ -18,6 +18,7 @@ module Minitest
       def initialize(options = {})
         super
         @print_failure_summary = options[:print_failure_summary]
+        @suppress_inline_failure_output = options[:suppress_inline_failure_output]
       end
 
       def start
@@ -50,7 +51,7 @@ module Minitest
       def record(test)
         super
         record_print_status(test)
-        record_print_failures_if_any(test) unless @print_failure_summary
+        record_print_failures_if_any(test) if @suppress_inline_failure_output
       end
 
       protected
