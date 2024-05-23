@@ -6,7 +6,6 @@
 * Updated `JUnitReporter` to output a failure screenshot path when included in the minitest result [#346](https://github.com/minitest-reporters/minitest-reporters/pull/346) contributed by [matteeyah](https://github.com/matteeyah)
 * Fixed backwards fraction in `ProgressReporter` default format [#348](https://github.com/minitest-reporters/minitest-reporters/pull/348) contributed by [notEthan](https://github.com/notEthan)
 * Added option `suppress_inline_failure_output` to `SpecReporter` to provide an explicit switch, separate from `print_failure_summary`, for suppressing inline failure messages. Until this change, the `print_failure_summary` would do both: print a failure/error summary after all tests run and suppress the inline failure messages. With this change `print_failure_summary` will just add a summary at the end of a test run, and it will no longer suppress the inline failure messages.
-  as they happen [#306](https://github.com/minitest-reporters/minitest-reporters/pull/306) contributed by [picandocodigo](https://github.com/picandocodigo)
 
 ### [1.6.1](https://github.com/kern/minitest-reporters/compare/v1.6.0...v1.6.1)
 
