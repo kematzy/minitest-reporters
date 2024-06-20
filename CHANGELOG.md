@@ -1,4 +1,6 @@
 ### [dev](https://github.com/minitest-reporters/minitest-reporters/compare/v1.7.0...master)
+* Fixed logic of new `suppress_inline_failure_output`. This option was doing the opposite of what it intended to do.
+  [#354](https://github.com/minitest-reporters/minitest-reporters/pull/354)
 
 ### [1.7.0](https://github.com/minitest-reporters/minitest-reporters/compare/v1.6.1...v1.7.0)
 
