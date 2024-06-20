@@ -13,11 +13,14 @@ module Minitest
       # The constructor takes an `options` hash
       # @param options [Hash]
       # @option options print_failure_summary [Boolean] whether to print the errors at the bottom of the
-      #   report or inline as they happen.
+      #   report.
+      # @option options suppress_inline_failure_output [Boolean] whether to suppress the printing of errors
+      #   inline with the test results as they occur.
       #
       def initialize(options = {})
         super
         @print_failure_summary = options[:print_failure_summary]
+        @suppress_inline_failure_output = options[:suppress_inline_failure_output]
       end
 
       def start
@@ -50,7 +53,7 @@ module Minitest
       def record(test)
         super
         record_print_status(test)
-        record_print_failures_if_any(test) unless @print_failure_summary
+        record_print_failures_if_any(test) if @suppress_inline_failure_output
       end
 
       protected
