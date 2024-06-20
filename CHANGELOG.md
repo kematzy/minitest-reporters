@@ -1,4 +1,6 @@
-### [dev](https://github.com/kern/minitest-reporters/compare/v1.6.1...master)
+### [dev](https://github.com/minitest-reporters/minitest-reporters/compare/v1.7.0...master)
+
+### [1.7.0](https://github.com/minitest-reporters/minitest-reporters/compare/v1.6.1...v1.7.0)
 
 * Minor documentation improvements [#343](https://github.com/minitest-reporters/minitest-reporters/pull/343)
 * Fixed homepage link in gemspec [#333](https://github.com/minitest-reporters/minitest-reporters/pull/333) contributed by [andyw8](https://github.com/andyw8)
