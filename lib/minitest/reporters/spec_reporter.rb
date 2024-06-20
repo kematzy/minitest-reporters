@@ -53,7 +53,7 @@ module Minitest
       def record(test)
         super
         record_print_status(test)
-        record_print_failures_if_any(test) if @suppress_inline_failure_output
+        record_print_failures_if_any(test) unless @suppress_inline_failure_output
       end
 
       protected
