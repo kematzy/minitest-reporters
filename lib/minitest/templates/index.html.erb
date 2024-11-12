@@ -11,7 +11,9 @@
 <body>
 <div class="container">
     <div class="jumbotron">
-        <h1><%= title %></h1>
+        <h3><small>Generated on <%= Time.now.strftime("%b %d, %Y at %H:%M %Z") %></small></h3>
+        <h1>
+            <%= title %></h1>
         <p>
             Finished in <%= total_time_to_hms %>, <%= '%.2f tests/s' % (count / total_time) %>, <%= '%.2f assertions/s' % (assertions / total_time) %>
         </p>
@@ -32,8 +34,8 @@
             <div class="progress-bar progress-bar-danger" style="width: <%= percent_errors_failures %>%">
                 <%= '%d' % percent_errors_failures %>% failed
             </div>
-            <div class="progress-bar progress-bar-warning" style="width: <%= percent_skipps %>%">
-                <%= '%d' % percent_skipps %>% skipped
+            <div class="progress-bar progress-bar-warning" style="width: <%= percent_skips %>%">
+                <%= '%d' % percent_skips %>% skipped
             </div>
         </div>
 

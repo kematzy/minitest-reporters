@@ -60,7 +60,9 @@ module Minitest
     end
 
     def self.choose_reporters(console_reporters, env)
-      if env["TM_PID"]
+      if env["MINITEST_REPORTER"]
+        [Minitest::Reporters.const_get(env["MINITEST_REPORTER"]).new]
+      elsif env["TM_PID"]
         [RubyMateReporter.new]
       elsif env["RM_INFO"] || env["TEAMCITY_VERSION"]
         [RubyMineReporter.new]
@@ -78,7 +80,7 @@ module Minitest
     end
 
     def self.minitest_version
-      Minitest::VERSION.gsub('.', '').to_i
+      Minitest::VERSION.delete('.').to_i
     end
 
     def self.use_old_activesupport_fix!

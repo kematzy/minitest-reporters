@@ -1,11 +1,9 @@
 [gem]: https://rubygems.org/gems/minitest-reporters
-[travis]: https://travis-ci.org/kern/minitest-reporters
 
 # minitest-reporters - create customizable Minitest output formats
 
-[![Join the chat at https://gitter.im/kern/minitest-reporters](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kern/minitest-reporters?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Gem Version](https://badge.fury.io/rb/minitest-reporters.svg)][gem]
-[![Build Status](https://secure.travis-ci.org/kern/minitest-reporters.png)][travis]
+[![Build Status](https://github.com/minitest-reporters/minitest-reporters/actions/workflows/ci.yml/badge.svg?event=push&branch=master)](https://github.com/minitest-reporters/minitest-reporters/actions?query=event%3Apush+branch%3Amaster)
 
 Death to haphazard monkey-patching! Extend Minitest through simple hooks.
 
@@ -36,6 +34,25 @@ Want to use multiple reporters?
 Minitest::Reporters.use! [Minitest::Reporters::SpecReporter.new, Minitest::Reporters::JUnitReporter.new]
 ```
 
+If TextMate, TeamCity, RubyMine or VIM presence is detected, the reporter will be automatically chosen,
+regardless of any reporters passed to the `use!` method.
+
+To override this behavior, you may set the ENV variable MINITEST_REPORTER:
+
+```sh
+export MINITEST_REPORTER=JUnitReporter
+```
+
+Detection of those systems is based on presence of certain ENV variables and are evaluated in the following order:
+
+```
+MINITEST_REPORTER => use reporter indicated in env variable
+TM_PID => use RubyMateReporter
+RM_INFO => use RubyMineReporter
+TEAMCITY_VERSION => use RubyMineReporter
+VIM => disable all Reporters
+```
+
 The following reporters are provided:
 
 ```ruby
@@ -47,6 +64,7 @@ Minitest::Reporters::RubyMateReporter # => Simple reporter designed for RubyMate
 Minitest::Reporters::RubyMineReporter # => Reporter designed for RubyMine IDE and TeamCity CI server
 Minitest::Reporters::JUnitReporter    # => JUnit test reporter designed for JetBrains TeamCity
 Minitest::Reporters::MeanTimeReporter # => Produces a report summary showing the slowest running tests
+Minitest::Reporters::HtmlReporter     # => Generates an HTML report of the test results
 ```
 
 Options can be passed to these reporters at construction-time, e.g. to force
@@ -111,15 +129,15 @@ By combining the configuration options the following output formats can be achie
 
 **Default Reporter**
 
-![Default Reporter](./assets/default-reporter.png?raw=true)
+![Default Reporter](https://raw.githubusercontent.com/minitest-reporters/minitest-reporters/master/assets/default-reporter.png)
 
 **Spec Reporter**
 
-![Spec Reporter](./assets/spec-reporter.png?raw=true)
+![Spec Reporter](https://raw.githubusercontent.com/minitest-reporters/minitest-reporters/master/assets/spec-reporter.png)
 
 **Progress Reporter**
 
-![Progress Reporter](./assets/progress-reporter.png?raw=true)
+![Progress Reporter](https://raw.githubusercontent.com/minitest-reporters/minitest-reporters/master/assets/progress-reporter.png)
 
 ## Caveats ##
 
@@ -137,16 +155,20 @@ happening if you see overly long or otherwise unexpected backtraces.)
 
 To avoid that, you must manually tell minitest-reporters which filter to use. In Rails,
 do this in `test_helper.rb`:
-
-    Minitest::Reporters.use!(
-      Minitest::Reporters::DefaultReporter.new,
-      ENV,
-      Minitest.backtrace_filter
-    )
-
+```ruby
+Minitest::Reporters.use!(
+  Minitest::Reporters::DefaultReporter.new,
+  ENV,
+  Minitest.backtrace_filter
+)
+```
 The third parameter to `.use!`, in this case `Minitest.backtrace_filter`, should be a
 filter object. In the above example, you're telling minitest-reporters to use the filter
 that Rails has already set.
+
+**Test Anything Protocol (TAP)**
+
+The [Test Anything Protocol](https://testanything.org) is a specification for outputting test results in an implementation-agnostic manner so that various tools can read the output. If you need to produce TAP-compliant output for Minitest results, see this [blog post](https://dev.to/davidwessman/rails-minitest-results-output-in-tap-format-for-heroku-ci-46d3) and [gist](https://gist.github.com/davidwessman/09a13840a8a80080e3842ac3051714c7) by [@davidwessman](https://github.com/davidwessman).
 
 ## Note on Patches/Pull Requests ##
 
@@ -158,9 +180,9 @@ that Rails has already set.
 
 ## Resources ##
 
-* [GitHub Repository](https://github.com/CapnKernul/minitest-reporters)
-* [Documentation](http://www.rubydoc.info/github/kern/minitest-reporters/master)
+* [GitHub Repository](https://github.com/minitest-reporters/minitest-reporters/)
+* [Documentation](https://www.rubydoc.info/github/minitest-reporters/minitest-reporters)
 
 ## License ##
 
-Minitest-reporters is licensed under the MIT License. See `LICENSE` for details.
+Minitest-reporters is licensed under the MIT License. See [LICENSE](LICENSE) for details.

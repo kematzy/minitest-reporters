@@ -19,11 +19,16 @@ module Minitest
         @suite_times = []
         @suite_start_times = {}
         @fast_fail = options.fetch(:fast_fail, false)
+        @show_test_location = options.fetch(:location, false)
         @options = options
       end
 
       def start
         super
+        on_start
+      end
+
+      def on_start
         puts
         puts("# Running tests with run options %s:" % options[:args])
         puts
@@ -48,6 +53,10 @@ module Minitest
       def record(test)
         super
 
+        on_record(test)
+      end
+
+      def on_record(test)
         print "#{"%.2f" % test.time} = " if options[:verbose]
 
         # Print the pass/skip/fail mark
@@ -79,6 +88,10 @@ module Minitest
 
       def report
         super
+        on_report
+      end
+
+      def on_report
         status_line = "Finished tests in %.6fs, %.4f tests/s, %.4f assertions/s." %
           [total_time, count / total_time, assertions / total_time]
 
@@ -101,7 +114,7 @@ module Minitest
           puts
 
           slow_tests.each do |test|
-            puts "%.6fs %s" % [test.time, "#{test.name}##{test.class}"]
+            puts "%.6fs %s#%s" % [test.time, test.name, test_class(test)]
           end
         end
 
@@ -129,10 +142,27 @@ module Minitest
         unless message.nil? || message.strip == ''
           puts
           puts colored_for(result(test), message)
+          if @show_test_location
+            location = get_source_location(test)
+            puts "\n\n#{relative_path(location[0])}:#{location[1]}"
+          end
+
         end
       end
 
       private
+
+      def relative_path(path)
+        Pathname.new(path).relative_path_from(Pathname.new(Dir.getwd))
+      end
+      
+      def get_source_location(result)
+        if result.respond_to? :klass
+          result.source_location
+        else
+          result.method(result.name).source_location
+        end
+      end
 
       def color?
         return @color if defined?(@color)
@@ -175,7 +205,6 @@ module Minitest
 
       def location(exception)
         last_before_assertion = ''
-
         exception.backtrace.reverse_each do |s|
           break if s =~ /in .(assert|refute|flunk|pass|fail|raise|must|wont)/
           last_before_assertion = s
@@ -189,12 +218,12 @@ module Minitest
 
         if test.skipped?
           if @detailed_skip
-            "Skipped:\n#{test.class}##{test.name} [#{location(e)}]:\n#{e.message}"
+            "Skipped:\n#{test_class(test)}##{test.name} [#{location(e)}]:\n#{e.message}"
           end
         elsif test.error?
-          "Error:\n#{test.class}##{test.name}:\n#{e.message}"
+          "Error:\n#{test_class(test)}##{test.name}:\n#{e.message}"
         else
-          "Failure:\n#{test.class}##{test.name} [#{test.failure.location}]\n#{e.class}: #{e.message}"
+          "Failure:\n#{test_class(test)}##{test.name} [#{test.failure.location}]\n#{e.class}: #{e.message}"
         end
       end
 

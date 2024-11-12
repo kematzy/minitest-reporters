@@ -5,9 +5,11 @@ require 'erb'
 module Minitest
   module Reporters
     # A reporter for generating HTML test reports
-    # This is recommended to be used with a CI server, where the report is kept as an artifact and is accessible via a shared link
+    # This is recommended to be used with a CI server, where the report is kept as an artifact and is accessible via
+    # a shared link
     #
-    # The reporter sorts the results alphabetically and then by results so that failing and skipped tests are at the top.
+    # The reporter sorts the results alphabetically and then by results
+    # so that failing and skipped tests are at the top.
     #
     # When using Minitest Specs, the number prefix is dropped from the name of the test so that it reads well
     #
@@ -16,7 +18,6 @@ module Minitest
     # The report is generated using ERB. A custom ERB template can be provided but it is not required
     # The default ERB template uses JQuery and Bootstrap, both of these are included by referencing the CDN sites
     class HtmlReporter < BaseReporter
-
       # The title of the report
       attr_reader :title
 
@@ -27,17 +28,20 @@ module Minitest
 
       # The percentage of tests that passed, calculated in a way that avoids rounding errors
       def percent_passes
-        100 - percent_skipps - percent_errors_failures
+        100 - percent_skips - percent_errors_failures
       end
 
       # The percentage of tests that were skipped
-      def percent_skipps
-        (skips/count.to_f * 100).to_i
+      def percent_skips
+        (skips / count.to_f * 100).to_i
       end
+
+      # Keeping old method name with typo for backwards compatibility in custom templates (for now)
+      alias_method :percent_skipps, :percent_skips
 
       # The percentage of tests that failed
       def percent_errors_failures
-        ((errors+failures)/count.to_f * 100).to_i
+        ((errors + failures) / count.to_f * 100).to_i
       end
 
       # Trims off the number prefix on test names when using Minitest Specs
@@ -57,11 +61,11 @@ module Minitest
         super({})
 
         defaults = {
-            :title           => 'Test Results',
-            :erb_template    => "#{File.dirname(__FILE__)}/../templates/index.html.erb",
-            :reports_dir     => 'test/html_reports',
-            :mode            => :safe,
-            :output_filename => 'index.html'
+          :title           => 'Test Results',
+          :erb_template    => "#{File.dirname(__FILE__)}/../templates/index.html.erb",
+          :reports_dir     => ENV['MINITEST_HTML_REPORTS_DIR'] || 'test/html_reports',
+          :mode            => :safe,
+          :output_filename => ENV['MINITEST_HTML_REPORTS_FILENAME'] || 'index.html',
         }
 
         settings = defaults.merge(args)
@@ -73,10 +77,14 @@ module Minitest
         reports_dir = settings[:reports_dir]
 
         @reports_path = File.absolute_path(reports_dir)
+      end
+
+      def start
+        super
 
         puts "Emptying #{@reports_path}"
-        FileUtils.remove_dir(@reports_path) if File.exists?(@reports_path)
         FileUtils.mkdir_p(@reports_path)
+        File.delete(html_file) if File.exist?(html_file)
       end
 
       # Called by the framework to generate the report
@@ -85,11 +93,10 @@ module Minitest
 
         begin
           puts "Writing HTML reports to #{@reports_path}"
-          html_file = "#{@reports_path}/#{@output_filename}"
           erb_str = File.read(@erb_template)
           renderer = ERB.new(erb_str)
 
-          tests_by_suites = tests.group_by(&:class) # taken from the JUnit reporter
+          tests_by_suites = tests.group_by { |test| test_class(test) } # taken from the JUnit reporter
 
           suites = tests_by_suites.map do |suite, tests|
             suite_summary = summarize_suite(suite, tests)
@@ -104,6 +111,7 @@ module Minitest
             f.write(result)
           end
 
+        # rubocop:disable Lint/RescueException
         rescue Exception => e
           puts 'There was an error writing the HTML report'
           puts 'This may have been caused by cancelling the test run'
@@ -111,10 +119,14 @@ module Minitest
           puts 'Use mode => :terse in the HTML reporters constructor to see less detail' if @mode != :terse
           raise e if @mode != :terse
         end
-
+        # rubocop:enable Lint/RescueException
       end
 
       private
+
+      def html_file
+        "#{@reports_path}/#{@output_filename}"
+      end
 
       def compare_suites_by_name(suite_a, suite_b)
         suite_a[:name] <=> suite_b[:name]
@@ -205,10 +217,10 @@ module Minitest
         return ('%.2fs' % total_time) if total_time < 1
 
         hours = (total_time / (60 * 60)).round
-        minutes = ((total_time / 60) % 60).round.to_s.rjust(2,'0')
-        seconds = (total_time % 60).round.to_s.rjust(2,'0')
+        minutes = ((total_time / 60) % 60).round.to_s.rjust(2, '0')
+        seconds = (total_time % 60).round.to_s.rjust(2, '0')
 
-        "#{ hours }h#{ minutes }m#{ seconds }s"
+        "#{hours}h#{minutes}m#{seconds}s"
       end
     end
   end

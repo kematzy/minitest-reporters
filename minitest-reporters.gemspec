@@ -8,20 +8,20 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ['Alexander Kern']
   s.email       = ['alex@kernul.com']
-  s.homepage    = 'https://github.com/CapnKernul/minitest-reporters'
+  s.homepage    = 'https://github.com/minitest-reporters/minitest-reporters'
   s.summary     = %q{Create customizable Minitest output formats}
   s.description = %q{Death to haphazard monkey-patching! Extend Minitest through simple hooks.}
+  s.license     = 'MIT'
 
   s.required_ruby_version = '>= 1.9.3'
-  s.rubyforge_project = 'minitest-reporters'
 
   s.add_dependency 'minitest', '>= 5.0'
   s.add_dependency 'ansi'
   s.add_dependency 'ruby-progressbar'
   s.add_dependency 'builder'
 
-  s.add_development_dependency 'maruku'
   s.add_development_dependency 'rake'
+  s.add_development_dependency 'rubocop'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")

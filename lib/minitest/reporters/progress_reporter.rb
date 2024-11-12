@@ -13,20 +13,20 @@ module Minitest
       include RelativePosition
       include ANSI::Code
 
-      PROGRESS_MARK = '='
+      PROGRESS_MARK = '='.freeze
 
       def initialize(options = {})
         super
         @detailed_skip = options.fetch(:detailed_skip, true)
 
-        @progress = ProgressBar.create({
+        @progress = ProgressBar.create(
           total:          total_count,
           starting_at:    count,
           progress_mark:  green(PROGRESS_MARK),
           remainder_mark: ' ',
-          format:         '  %C/%c: [%B] %p%% %a, %e',
+          format:         options.fetch(:format, '  %c/%C: [%B] %p%% %a, %e'),
           autostart:      false
-        })
+        )
       end
 
       def start
@@ -38,9 +38,17 @@ module Minitest
         show
       end
 
+      def before_test(test)
+        super
+        if options[:verbose]
+          puts
+          puts("\n%s#%s" % [test_class(test), test.name])
+        end
+      end
+
       def record(test)
         super
-        return if test.skipped? && !@detailed_skip
+        return show if test.skipped? && !@detailed_skip
         if test.failure
           print "\e[0m\e[1000D\e[K"
           print_colored_status(test)
@@ -79,8 +87,7 @@ module Minitest
       end
 
       def print_test_with_time(test)
-        puts [test.name, test.class, total_time].inspect
-        print(" %s#%s (%.2fs)" % [test.name, test.class, total_time])
+        print(" %s#%s (%.2fs)" % [test_class(test), test.name, total_time])
       end
 
       def color

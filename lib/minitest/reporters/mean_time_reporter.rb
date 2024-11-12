@@ -1,9 +1,9 @@
 require 'minitest/reporters'
+require 'tmpdir'
 require 'yaml'
 
 module Minitest
   module Reporters
-
     # This reporter creates a report providing the average (mean), minimum and
     # maximum times for a test to run. Running this for all your tests will
     # allow you to:
@@ -22,7 +22,6 @@ module Minitest
     #     rake reset_statistics
     #
     class MeanTimeReporter < Minitest::Reporters::DefaultReporter
-
       class InvalidOrder < StandardError; end
       class InvalidSortColumn < StandardError; end
 
@@ -42,6 +41,10 @@ module Minitest
       #   last test run. Defaults to '/tmp/minitest_reporters_report'.
       # @option show_count [Fixnum] The number of tests to show in the report
       #   summary at the end of the test run. Default is 15.
+      # @option show_progress [Boolean] If true it prints pass/skip/fail marks.
+      #   Default is true.
+      # @option show_all_runs [Boolean] If true it shows all recorded suit results.
+      #   Default is true.
       # @option sort_column [Symbol] One of :avg (default), :min, :max, :last.
       #   Determines the column by which the report summary is sorted.
       # @option order [Symbol] One of :desc (default), or :asc. By default the
@@ -80,12 +83,24 @@ module Minitest
         write_to_screen!
       end
 
+      def on_start
+        super if options[:show_progress]
+      end
+
+      def on_record(test)
+        super if options[:show_progress]
+      end
+
+      def on_report
+        super if options[:show_progress]
+      end
+
       # Resets the 'previous runs' file, essentially removing all previous
       # statistics gathered.
       #
       # @return [void]
       def reset_statistics!
-        File.open(previous_runs_filename, 'w+') { |f| f.write('') }
+        File.delete(previous_runs_filename) if File.exist?(previous_runs_filename)
       end
 
       protected
@@ -106,9 +121,11 @@ module Minitest
         {
           order:                  :desc,
           show_count:             15,
+          show_progress:          true,
+          show_all_runs:          true,
           sort_column:            :avg,
-          previous_runs_filename: '/tmp/minitest_reporters_previous_run',
-          report_filename:        '/tmp/minitest_reporters_report',
+          previous_runs_filename: File.join(Dir.tmpdir, 'minitest_reporters_previous_run'),
+          report_filename:        File.join(Dir.tmpdir, 'minitest_reporters_report'),
         }
       end
 
@@ -130,10 +147,10 @@ module Minitest
         order_sorted_body.each_with_object([]) do |result, obj|
           rating = rate(result[:last], result[:min], result[:max])
 
-          obj << "#{avg_label} #{result[:avg]} " \
-                 "#{min_label} #{result[:min]} " \
-                 "#{max_label} #{result[:max]} " \
-                 "#{run_label(rating)} #{result[:last]} " \
+          obj << "#{avg_label} #{result[:avg].to_s.ljust(12)} " \
+                 "#{min_label} #{result[:min].to_s.ljust(12)} " \
+                 "#{max_label} #{result[:max].to_s.ljust(12)} " \
+                 "#{run_label(rating)} #{result[:last].to_s.ljust(12)} " \
                  "#{des_label} #{result[:desc]}\n"
         end.join
       end
@@ -153,14 +170,16 @@ module Minitest
       # @return [Array<Hash<Symbol => String>>] All of the results sorted by
       #   the :sort_column option. (Defaults to :avg).
       def column_sorted_body
-        previous_run.each_with_object([]) do |(description, timings), obj|
+        runs = options[:show_all_runs] ? previous_run : current_run
+        runs.keys.each_with_object([]) do |description, obj|
+          timings = previous_run[description]
           size = Array(timings).size
           sum  = Array(timings).inject { |total, x| total + x }
           obj << {
-            avg:  (sum / size).round(9).to_s.ljust(12),
-            min:  Array(timings).min.round(9).to_s.ljust(12),
-            max:  Array(timings).max.round(9).to_s.ljust(12),
-            last: Array(timings).last.round(9).to_s.ljust(12),
+            avg:  (sum / size).round(9),
+            min:  Array(timings).min.round(9),
+            max:  Array(timings).max.round(9),
+            last: Array(timings).last.round(9),
             desc: description,
           }
         end.sort_by { |k| k[sort_column] }
@@ -229,15 +248,13 @@ module Minitest
       def create_or_update_previous_runs!
         if previously_ran?
           current_run.each do |description, elapsed|
-          new_times = if previous_run["#{description}"]
-                        Array(previous_run["#{description}"]) << elapsed
+            new_times = if previous_run[description.to_s]
+                          Array(previous_run[description.to_s]) << elapsed
+                        else
+                          Array(elapsed)
+                        end
 
-                      else
-                        Array(elapsed)
-
-                      end
-
-            previous_run.store("#{description}", new_times)
+            previous_run.store(description.to_s, new_times)
           end
 
           File.write(previous_runs_filename, previous_run.to_yaml)
@@ -366,7 +383,6 @@ module Minitest
 
         end
       end
-
     end
   end
 end

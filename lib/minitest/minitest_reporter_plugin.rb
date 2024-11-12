@@ -1,6 +1,6 @@
 module Minitest
   module Reporters
-    class DelegateReporter
+    class DelegateReporter < Minitest::AbstractReporter
       def initialize(reporters, options = {})
         @reporters = reporters
         @options = options
@@ -14,6 +14,12 @@ module Minitest
 
       def start
         all_reporters.each(&:start)
+      end
+
+      def prerecord(klass, name)
+        all_reporters.each do |reporter|
+          reporter.prerecord klass, name
+        end
       end
 
       def record(result)
@@ -31,14 +37,17 @@ module Minitest
       end
 
       private
+
       # stolen from minitest self.run
       def total_count(options)
         filter = options[:filter] || '/./'
-        filter = Regexp.new $1 if filter =~ /\/(.*)\//
+        filter = Regexp.new $1 if filter.is_a?(String) && filter =~ %r%/(.*)/%
 
-        Minitest::Runnable.runnables.map(&:runnable_methods).flatten.find_all { |m|
-          filter === m || filter === "#{self}##{m}"
-        }.size
+        Minitest::Runnable.runnables.map { |runnable|
+          runnable.runnable_methods.find_all { |m|
+            filter === m || filter === "#{runnable}##{m}"
+          }.size
+        }.inject(:+)
       end
 
       def all_reporters
