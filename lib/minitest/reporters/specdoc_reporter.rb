@@ -10,12 +10,12 @@ module Minitest
       include ANSI::Code
       include RelativePosition
 
-     def initialize(options = {})
+      def initialize(options = {})
         super
         options = {
-          :show_order  => :after,
-          :show_time   => true,
-          :show_status => true
+          :show_order => :after,
+          :show_time => true,
+          :show_status => true,
         }.merge(options)
         @options = options
       end
@@ -55,10 +55,10 @@ module Minitest
           print(" #{test_time}") if options[:show_time]
         end
         puts
-        if !test.skipped? && test.failure
-          print_info(test.failure)
-          puts
-        end
+        return unless !test.skipped? && test.failure
+
+        print_info(test.failure)
+        puts
       end
 
       protected
@@ -67,7 +67,7 @@ module Minitest
         puts suite
       end
 
-      def after_suite(suite)
+      def after_suite(_suite)
         puts
       end
     end

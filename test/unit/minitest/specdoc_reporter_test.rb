@@ -72,7 +72,6 @@ module MinitestReportersTest
       end
     end
 
-
     def test_specdoc_reporter_with_option_show_order_before_and_test_syntax_name_should_remove_test__prefix
       reporter = Minitest::Reporters::SpecdocReporter.new(:show_order => :before)
       @test.name = "test_should_return_the_correct_path"
@@ -122,7 +121,5 @@ module MinitestReportersTest
         reporter.record(@test)
       end
     end
-
   end
-  
 end
